@@ -1,0 +1,1 @@
+console.log("SDK is running! Ready to call the Amazon SP-API.");
