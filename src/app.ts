@@ -1,35 +1,15 @@
-import express from 'express';
-import axios from 'axios';
-import { SellingPartnerApiAuth } from '@scaleleap/selling-partner-api-sdk';
+import { createAxiosInstance } from '@scaleleap/selling-partner-api-sdk';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
-
-// Root route
-app.get('/', (_req, res) => {
-  res.send('✅ Amazon SP-API Proxy is running!');
-});
-
-// Health check route
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
-// Fee report route using SP-API SDK
 app.post('/get-fee-report', async (_req, res) => {
   try {
-    const auth = new SellingPartnerApiAuth();
-
-    const client = await auth.getAuthorizedApiClient({
+    const client = await createAxiosInstance({
       region: 'eu',
       endpoint: 'reports',
     });
 
     const result = await client.post('/reports/2021-06-30/reports', {
       reportType: 'GET_FBA_ESTIMATED_FBA_FEES_ASIN',
-      marketplaceIds: ['A1F83G8C2ARO7P'], // UK marketplace
+      marketplaceIds: ['A1F83G8C2ARO7P'],
     });
 
     res.status(200).json({
@@ -43,37 +23,4 @@ app.post('/get-fee-report', async (_req, res) => {
       details: error.response?.data || error.message,
     });
   }
-});
-
-// Inventory check route (unchanged for now)
-app.get('/inventory/:asin', async (req, res) => {
-  const { asin } = req.params;
-
-  try {
-    const response = await axios.get(
-      'https://sellingpartnerapi-eu.amazon.com/fba/inventory/v1/summaries',
-      {
-        params: {
-          marketplaceIds: 'A1F83G8C2ARO7P',
-          asin,
-        },
-      }
-    );
-
-    res.status(200).json({
-      message: 'Inventory data retrieved',
-      data: response.data,
-    });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to retrieve inventory',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is listening on port ${PORT}`);
 });
