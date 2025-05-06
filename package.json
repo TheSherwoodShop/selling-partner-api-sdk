@@ -41,7 +41,7 @@
     "lint": "eslint --ext ts,js src/ test/",
     "lint:fix": "npm run lint -- --fix",
     "semantic-release": "npx @scaleleap/semantic-release-config",
-    "start": "ts-node --transpile-only --pretty src",
+    "start": "ts-node --transpile-only --pretty src/app.ts",
     "test": "jest --testPathIgnorePatterns test/integration/ ",
     "test:integration": "POLLY_MODE=passthrough jest test/integration/ --setupFiles dotenv/config",
     "test:watch": "jest --watchAll",
