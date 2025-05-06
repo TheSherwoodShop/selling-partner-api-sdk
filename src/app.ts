@@ -1,4 +1,21 @@
+import express from 'express';
+import axios from 'axios';
 import { createAxiosInstance } from '@scaleleap/selling-partner-api-sdk';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+// ✅ Your routes go here — AFTER the `app` constant is defined
+
+app.get('/', (_req, res) => {
+  res.send('✅ Amazon SP-API Proxy is running!');
+});
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
 
 app.post('/get-fee-report', async (_req, res) => {
   try {
@@ -23,4 +40,10 @@ app.post('/get-fee-report', async (_req, res) => {
       details: error.response?.data || error.message,
     });
   }
+});
+
+// Other routes (like /inventory/:asin) can go here
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server is listening on port ${PORT}`);
 });
