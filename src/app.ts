@@ -1,10 +1,10 @@
 import express from 'express';
 import axios from 'axios';
+import { SellingPartnerApiAuth } from '@scaleleap/selling-partner-api-sdk';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON if you need it later
 app.use(express.json());
 
 // Root route
@@ -17,31 +17,35 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Fee report route
+// Fee report route using SP-API SDK
 app.post('/get-fee-report', async (_req, res) => {
   try {
-    const response = await axios.post(
-      'https://sellingpartnerapi-eu.amazon.com/reports/2021-06-30/reports',
-      {
-        reportType: 'GET_FBA_ESTIMATED_FBA_FEES_ASIN',
-        marketplaceIds: ['A1F83G8C2ARO7P'] // UK marketplace
-      }
-    );
+    const auth = new SellingPartnerApiAuth();
+
+    const client = await auth.getAuthorizedApiClient({
+      region: 'eu',
+      endpoint: 'reports',
+    });
+
+    const result = await client.post('/reports/2021-06-30/reports', {
+      reportType: 'GET_FBA_ESTIMATED_FBA_FEES_ASIN',
+      marketplaceIds: ['A1F83G8C2ARO7P'], // UK marketplace
+    });
 
     res.status(200).json({
       message: 'Fee report requested successfully',
-      data: response.data
+      data: result.data,
     });
   } catch (error: any) {
     console.error(error.response?.data || error.message);
     res.status(500).json({
       error: 'Failed to request fee report',
-      details: error.response?.data || error.message
+      details: error.response?.data || error.message,
     });
   }
 });
 
-// Inventory check route
+// Inventory check route (unchanged for now)
 app.get('/inventory/:asin', async (req, res) => {
   const { asin } = req.params;
 
@@ -51,20 +55,20 @@ app.get('/inventory/:asin', async (req, res) => {
       {
         params: {
           marketplaceIds: 'A1F83G8C2ARO7P',
-          asin
-        }
+          asin,
+        },
       }
     );
 
     res.status(200).json({
       message: 'Inventory data retrieved',
-      data: response.data
+      data: response.data,
     });
   } catch (error: any) {
     console.error(error.response?.data || error.message);
     res.status(500).json({
       error: 'Failed to retrieve inventory',
-      details: error.response?.data || error.message
+      details: error.response?.data || error.message,
     });
   }
 });
